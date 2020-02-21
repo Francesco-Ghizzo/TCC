@@ -1,0 +1,53 @@
+## Albedo_L5_2.1
+
+# Differenze con la versione precedente:
+
+# linea 112 <    output_dataset = gtiff_driver.Create( output_filename, 8021, 7061, 1, gdal.GDT_Byte )
+#           >    output_dataset = gtiff_driver.Create( output_filename, 7761, 6981, 1, gdal.GDT_Byte )
+
+
+## Albedo_L5_3.0
+
+# Differenze con la versione precedente:
+
+# La funzione read_earth_sun_dist() sostituisce read_doy() e ritorna direttamente dr (inversed squared relative earth sun distance)
+
+# Linea 21 < def read_doy(basename):
+#          > def read_earth_sun_dist(basename):
+# Linea 27, 28 <     return DOY
+#              >     dr = 1 + 0.033*(math.cos(DOY*2*math.pi/365))
+#              >     return dr
+
+# La funzione read_cos_theta() sostituisce read_sol_elev_angle() e calcola direttamente cos_theta, invece di restituire soltanto beta
+
+# Linea 39 < def read_sol_elev_angle(basename):
+#          > def read_cos_theta(basename):
+# Linea 45, 46, 47 <     return float(beta[0])
+#                  >     theta = ((math.pi/2) - math.radians(float(beta[0])))
+#                  >     cos_theta = math.cos(theta)
+#                  >     return cos_theta
+
+# La funzione reflectivity prende come argomenti dr, cos_theta e L invece che DOY, beta e L
+
+# Linea 59 < def reflectivity(bandNum, DOY, beta, L):
+#          > def reflectivity(bandNum, dr, cos_theta, L):
+# Linea 63, 64, 65 <     theta = ((math.pi/2) - math.radians(beta))
+#                  <     cos_theta = math.cos(theta)
+#                  <     dr = 1 + 0.033*(math.cos(DOY*2*math.pi/365))
+
+# Linea 140 <         ro = reflectivity(i, doy, sol_elev_angle, radiance)
+#           >         ro = reflectivity(i, earth_sun_dist, cosTheta, radiance)
+
+
+# Il Day of Year viene letto direttamente dentro la funzione read_earth_sun_dist(), senza bisogno di invocare read_doy()
+
+# Linea 91 <     doy = read_doy(landsat_dir_name)
+#          >     earth_sun_dist = read_earth_sun_dist(landsat_dir_name)
+
+# Invece di leggere e ritornare beta con la funzione read_sol_elev_angle(), viene letto beta e calcolato direttamente cos_theta attraverso la funzione read_cos_theta
+
+# Linea 98 <     sol_elev_angle = read_sol_elev_angle(landsat_dir_name)
+#          >     cosTheta = read_cos_theta(landsat_dir_name)
+
+# Linea 112 <     output_dataset = gtiff_driver.Create( output_filename, 7761, 6981, 1, gdal.GDT_Byte )
+#           >     output_dataset = gtiff_driver.Create( output_filename, 8021, 7061, 1, gdal.GDT_Byte )
